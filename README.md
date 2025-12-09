@@ -9,40 +9,60 @@
   <img src="https://img.shields.io/badge/AWS-CloudFront-purple?logo=amazonaws" />
   <img src="https://img.shields.io/badge/AWS-Certificate_Manager-green?logo=amazonaws" />
   <img src="https://img.shields.io/badge/AWS-Route_53-blue?logo=amazonaws" />
+  <a href="https://github.com/Thiyagu-2003">
+    <img src="https://img.shields.io/badge/Made%20By-Thiyagu%20S-green?logo=github" />
+  </a>
 </p>
+
+---
+
+# 📑 **Table of Contents**
+
+1. [🧭 Overview](#-overview)
+2. [🔶 1. Configure S3 Bucket](#-1-configure-s3-bucket)
+
+   * Create Bucket
+   * Enable Static Hosting
+   * Bucket Policy
+   * Upload Files
+3. [🔷 2. Configure Route 53](#-2-configure-route-53)
+4. [🟢 3. Request SSL Certificate (ACM)](#-3-request-ssl-certificate-acm)
+5. [🟣 4. Configure CloudFront](#-4-configure-cloudfront)
+6. [🔵 5. Connect CloudFront with Route 53](#-5-connect-cloudfront-with-route-53)
+7. [💠 Full AWS Architecture Diagram](#-full-aws-architecture-diagram)
+8. [👤 Author](#-author)
 
 ---
 
 # 🧭 **Overview**
 
-This guide walks you through deploying a **static website** using:
+This guide walks you through deploying a **secure, fast, production-grade website** using:
 
-* 🌩️ **Amazon S3** — hosts your static files
-* 🛡️ **AWS Certificate Manager (ACM)** — provides HTTPS certificate
-* 🌍 **Amazon CloudFront** — CDN + HTTPS enforcement
-* 📡 **Amazon Route 53** — domain DNS configuration
+* 🌩️ **Amazon S3** — static hosting
+* 🛡️ **AWS Certificate Manager (ACM)** — HTTPS/SSL
+* 🌍 **Amazon CloudFront** — global CDN
+* 📡 **Amazon Route 53** — DNS + domain routing
 
-Deploying static sites this way is the correct production method (S3 website hosting directly is outdated and not secure).
+This is the **industry-standard** way to deploy static websites.
 
 ---
 
 # 🔶 **1. Configure S3 Bucket**
 
-### 🪣 **Create S3 Bucket**
+## 🪣 **Create S3 Bucket**
 
-* Name: **your domain name** (example: `thiyagu.cloud`)
-* Uncheck “Block all public access”
+* Bucket name: **your domain** → `thiyagu.cloud`
+* Disable **Block Public Access**
 * Enable **Static Website Hosting**
-* Enter:
 
-  * Index document: `index.html`
-  * Error document: `index.html` (for SPA routing)
+  * Index: `index.html`
+  * Error: `index.html` (for SPA routing)
 
 ---
 
-### 🔐 **Bucket Policy (Public Read)**
+## 🔐 **Bucket Policy (Public Read)**
 
-Paste this policy *exactly* after replacing with your bucket name:
+Replace `thiyagu.cloud` with your bucket name:
 
 ```json
 {
@@ -61,51 +81,59 @@ Paste this policy *exactly* after replacing with your bucket name:
 
 ---
 
-### 📤 **Upload Website Files**
+## 📤 **Upload Website Build**
 
-* Upload your **build folder contents only**
-* Do **NOT** modify the folder structure
-* Keep the filenames exactly as produced by React/Vue/Angular/HTML build
+* Upload **only the contents** of the `build` folder
+* Do **not** change file names or structure
+* React / Vue / Angular builds should be uploaded as-is
 
 ---
 
 # 🔷 **2. Configure Route 53**
 
-### 🌐 **Create Hosted Zone**
+## 🌐 **Create Hosted Zone**
 
-* Hosted Zone name **must match your domain**
-  Example: `thiyagu.cloud`
+* Hosted zone must be: **thiyagu.cloud**
 
-### 📌 **Update Nameservers**
+## 📌 **Update Nameservers**
 
-* Copy the 4 NS records from Route 53
-* Paste them into your domain provider (GoDaddy, Hostinger, Namecheap, etc.)
-* Add **WITHOUT the trailing dot**
+Copy the 4 NS records → paste into your domain provider:
+
+* GoDaddy
+* Hostinger
+* Namecheap
+* BigRock
+
+⚠️ **Remove the dot at the end.**
 
 Example:
-`ns-111.awsdns-22.com`  ✔️
-`ns-111.awsdns-22.com.` ✖️
 
-DNS propagation: **0–30 minutes** typically.
+```
+ns-111.awsdns-22.com    ✔️
+ns-111.awsdns-22.com.   ✖️
+```
+
+DNS propagation takes **5–30 minutes**.
 
 ---
 
 # 🟢 **3. Request SSL Certificate (ACM)**
 
-### 🔏 **Request Certificate**
+## 🔏 **Request Certificate**
 
-* Region must be **N. Virginia (us-east-1)** (CloudFront requirement)
-* Add both:
+Region must be **us-east-1 (N. Virginia)**.
+
+Add domains:
 
 ```
 thiyagu.cloud
 www.thiyagu.cloud
 ```
 
-### 📡 **Add Validation Records**
+## 📡 **Validate Certificate**
 
-* Select the certificate → Click **Create Records in Route 53**
-* DNS automatically validates in a few minutes
+* Click certificate → **Create records in Route 53**
+* Validation happens automatically
 
 Status becomes: **Issued**
 
@@ -113,56 +141,51 @@ Status becomes: **Issued**
 
 # 🟣 **4. Configure CloudFront**
 
-### ⚙️ **Create Distribution**
+## ⚙️ **Create Distribution**
 
-* Comment: any name
-* Origin:
-  👉 **Use S3 Website Endpoint**, not the bucket ARN
-  Example:
-  `http://thiyagu.cloud.s3-website.ap-south-1.amazonaws.com`
+### **Origin Settings**
 
-### 🔧 Important Settings
-
-* Viewer protocol: `Redirect HTTP to HTTPS`
-* WAF: optional
-* Caching: recommended defaults
-
-### 🌍 **Add Alternate Domain Names**
+Use the **S3 Website Endpoint**:
 
 ```
-www.thiyagu.cloud
+http://thiyagu.cloud.s3-website.ap-south-1.amazonaws.com
+```
+
+### **Viewer Settings**
+
+| Setting         | Value                 |
+| --------------- | --------------------- |
+| Viewer protocol | Redirect HTTP → HTTPS |
+| Cache policy    | Recommended           |
+| WAF             | Optional              |
+| Price class     | Use default           |
+
+### **Alternate Domain Names (CNAME)**
+
+```
 thiyagu.cloud
+www.thiyagu.cloud
 ```
 
-### 🔐 **Attach the ACM Certificate**
+### **SSL Certificate**
 
-Select the certificate you created earlier.
+Attach previously created ACM certificate.
 
-### ✅ **Create Distribution**
+Click **Create Distribution**.
 
-Deployment takes 5–10 minutes.
+Takes **5–10 minutes**.
 
 ---
 
 # 🔵 **5. Connect CloudFront with Route 53**
 
-Now Route 53 must point to CloudFront.
-
-### 1️⃣ **Record for main domain**
-
-```
-www.thiyagu.cloud
-```
+## 1️⃣ Record for `www.thiyagu.cloud`
 
 * Type: **A**
 * Alias: **Yes**
 * Target: **CloudFront Distribution**
 
-### 2️⃣ **Record for naked/root domain**
-
-```
-thiyagu.cloud
-```
+## 2️⃣ Record for root domain `thiyagu.cloud`
 
 * Type: **A**
 * Alias: **Yes**
@@ -172,19 +195,22 @@ thiyagu.cloud
 
 # 🎉 **Deployment Completed**
 
-Once DNS propagates:
+Your site is now:
 
-### Your website loads securely at:
+* 🌍 CDN-accelerated
+* 🔒 HTTPS secure
+* 🚀 Fast & globally optimized
+
+### Live at:
 
 ✅ [https://thiyagu.cloud](https://thiyagu.cloud)
 ✅ [https://www.thiyagu.cloud](https://www.thiyagu.cloud)
 
-Fast. Secure. CDN-accelerated. Proper production deployment.
-
-
 ---
 
+# 💠 **Full AWS Architecture Diagram**
 
+```
                                      ┌──────────────────────────────┐
                                      │        End Users             │
                                      │  (Browsers / Mobile / Apps)  │
@@ -227,9 +253,25 @@ Fast. Secure. CDN-accelerated. Proper production deployment.
                      │        - www.thiyagu.cloud                          │
                      │  • Auto-renewed & integrated with CloudFront        │
                      └────────────────────────────────────────────────────┘
-
-
-
-
+```
 
 ---
+
+## 👤 Author
+
+**Name:** Thiyagu S  
+**Role:** Cloud & DevOps Learner  
+**Country:** India 🇮🇳  
+**GitHub:** [Thiyagu-2003](https://github.com/Thiyagu-2003)
+
+---
+
+## ❤️ Footer
+
+<p align="center">
+  <strong>Made with ❤️ by <a href="https://github.com/Thiyagu-2003">Thiyagu S</a></strong><br>
+  <em>Learning • Building • Improving</em>
+</p>
+
+---
+
