@@ -14,6 +14,20 @@
   </a>
 </p>
 
+
+---
+
+<p align="center">
+  <a href="https://github.com/Thiyagu-2003/My-Porthfolio.git">
+    <img src="https://img.shields.io/badge/💻%20Project%20Source%20Code-1f6feb?style=for-the-badge&logo=github" />
+  </a>
+  <a href="https://www.thiyagu.cloud" style="margin-left: 10px;">
+    <img src="https://img.shields.io/badge/🌍%20Live%20Website-2ea44f?style=for-the-badge&logo=google-chrome" />
+  </a>
+</p>
+
+
+
 ---
 
 # 📑 **Table of Contents**
